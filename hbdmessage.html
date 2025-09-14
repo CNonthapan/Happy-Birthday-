@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Birthday — Terminal</title>
+  <style>
+    :root{
+      --bg:#091018;
+      --panel:#071219;
+      --text:#cfe8d9;
+      --accent:#7ee787;
+      --muted:#6b7880;
+      --warn:#f1fa8c;
+    }
+    html,body{height:100%;margin:0}
+    body{
+      background:#000;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace;
+      color:var(--text);
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;
+    }
+    .terminal{
+      width:min(880px,96%);
+      background:var(--panel);
+      border-radius:12px;
+      box-shadow: 0 10px 30px rgba(3,7,10,0.6);
+      padding:20px;
+      border:1px solid rgba(255,255,255,0.05);
+      min-height:400px;
+      overflow-y:auto;
+    }
+    .controls{display:flex;gap:8px;margin-bottom:14px}
+    .dot{width:12px;height:12px;border-radius:50%}
+    .dot.r{background:#ff5f56}
+    .dot.y{background:#ffbd2e}
+    .dot.g{background:#27c93f}
+    .line{font-size:15px;line-height:1.6;white-space:pre-wrap}
+    .prompt{color:var(--muted)}
+    .user{color:var(--accent)}
+    .cmd{color:var(--text)}
+    .result{margin-left:12px;color:var(--text)}
+    .cursor{display:inline-block;width:8px;height:16px;background:var(--text);margin-left:4px;animation:blink 1s steps(2) infinite}
+    @keyframes blink{50%{opacity:0}}
+
+    .greeting{font-size:18px;margin-top:12px;margin-left:6px;white-space:pre-wrap;max-width:86%}
+    .greeting-line{margin:6px 0}
+
+    .loading span{display:inline-block;animation:dotBlink 1.2s infinite}
+    .loading span:nth-child(2){animation-delay:.2s}
+    .loading span:nth-child(3){animation-delay:.4s}
+    @keyframes dotBlink{0%,80%,100%{opacity:0}40%{opacity:1}}
+
+    .ascii-art{color:var(--warn);font-size:12px;line-height:1.2;margin:12px 0;white-space:pre}
+  </style>
+</head>
+<body>
+  <div class="terminal" id="terminal">
+    <div class="controls" aria-hidden="true">
+      <div class="dot r"></div>
+      <div class="dot y"></div>
+      <div class="dot g"></div>
+    </div>
+    <div id="output"></div>
+  </div>
+
+  <script>
+    const asciiCake = `
+ ___  ___  ________  ________  ________  ___    ___      ________  ___  ________  _________  ___  ___  ________  ________      ___    ___ ___       
+|\  \|\  \|\   __  \|\   __  \|\   __  \|\  \  /  /|    |\   __  \|\  \|\   __  \|\___   ___\\  \|\  \|\   ___ \|\   __  \    |\  \  /  /|\  \      
+\ \  \\\  \ \  \|\  \ \  \|\  \ \  \|\  \ \  \/  / /    \ \  \|\ /\ \  \ \  \|\  \|___ \  \_\ \  \\\  \ \  \_|\ \ \  \|\  \   \ \  \/  / | \  \     
+ \ \   __  \ \   __  \ \   ____\ \   ____\ \    / /      \ \   __  \ \  \ \   _  _\   \ \  \ \ \   __  \ \  \ \\ \ \   __  \   \ \    / / \ \  \    
+  \ \  \ \  \ \  \ \  \ \  \___|\ \  \___|\/  /  /        \ \  \|\  \ \  \ \  \\  \|   \ \  \ \ \  \ \  \ \  \_\\ \ \  \ \  \   \/  /  /   \ \__\   
+   \ \__\ \__\ \__\ \__\ \__\    \ \__\ __/  / /           \ \_______\ \__\ \__\\ _\    \ \__\ \ \__\ \__\ \_______\ \__\ \__\__/  / /      \|__|   
+    \|__|\|__|\|__|\|__|\|__|     \|__||\___/ /             \|_______|\|__|\|__|\|__|    \|__|  \|__|\|__|\|_______|\|__|\|__|\___/ /           ___ 
+                                       \|___|/                                                                               \|___|/           |\__\
+                                                                                                                                               \|__|
+                                                                                                                                                    
+    `;
+
+    const birthdayMessage = [
+      "Happy Birthday, RECIPIENT_NAME! 🎉",
+      "Life can feel NP-hard sometimes, but celebrating is an easy O(n) decision.",
+      "— From Arm."
+    ];
+
+    const commands = [
+      {cmd: 'whoami', res: 'RECIPIENT_NAME'},
+      {cmd: 'uname -a', res: 'birthday-kernel v1.0 (fun-OS)'},
+      {cmd: 'echo $AGE', res: 'AGE'},
+      {cmd: 'ping party.server', res: 'Pinging 127.0.0.1 ... Success'},
+      {cmd: 'loading surprises', res: '<span class="loading">.<span>.</span><span>.</span></span>', raw:true},
+      {cmd: 'cat cake.txt', res: asciiCake, pre:true},
+      {cmd: 'cat birthday.txt', res: birthdayMessage}
+    ];
+
+    const output = document.getElementById('output');
+
+    let i = 0;
+    function runNext(){
+      if(i >= commands.length) return;
+      const c = commands[i];
+      const line = document.createElement('div');
+      line.className = 'line';
+      line.innerHTML = `<span class="prompt">guest@github-pages</span>:<span class="user">~</span>$ <span class="cmd">${c.cmd}</span><span class="cursor"></span>`;
+      output.appendChild(line);
+      scrollToBottom();
+
+      setTimeout(()=>{
+        line.querySelector('.cursor').remove();
+        if(Array.isArray(c.res)){
+          const greeting = document.createElement('div');
+          greeting.className = 'greeting';
+          c.res.forEach(txt => {
+            const gl = document.createElement('div');
+            gl.className = 'greeting-line';
+            gl.textContent = txt;
+            greeting.appendChild(gl);
+          });
+          output.appendChild(greeting);
+        } else {
+          const res = document.createElement('div');
+          if(c.pre){
+            res.className = 'ascii-art';
+            res.textContent = c.res;
+          } else if(c.raw){
+            res.className = 'result';
+            res.innerHTML = '➜ ' + c.res;
+          } else {
+            res.className = 'result';
+            res.textContent = '➜ ' + c.res;
+          }
+          output.appendChild(res);
+        }
+        scrollToBottom();
+        i++;
+        setTimeout(runNext, 1600);
+      }, 1500);
+    }
+
+    function scrollToBottom(){
+      output.parentElement.scrollTop = output.parentElement.scrollHeight;
+    }
+
+    // Personalization via query params
+    (function(){
+      const params = new URLSearchParams(location.search);
+      const name = params.get('name');
+      const age = params.get('age');
+      if(name){
+        commands[0].res = name;
+        commands[6].res = [
+          `Happy Birthday, ${name}! 🎉`,
+          "Life can feel NP-hard sometimes, but celebrating is an easy O(n) decision.",
+          "— From Arm."
+        ];
+      }
+      if(age){
+        commands[2].res = age;
+      }
+    })();
+
+    runNext();
+  </script>
+</body>
+</html>
