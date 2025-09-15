@@ -22,13 +22,13 @@
       padding:20px;
     }
     .terminal{
-      width:min(880px,96%);
+      width:min(920px,96%);
       background:var(--panel);
       border-radius:12px;
       box-shadow: 0 10px 30px rgba(3,7,10,0.6);
       padding:20px;
       border:1px solid rgba(255,255,255,0.05);
-      min-height:400px;
+      min-height:480px;
       overflow-y:auto;
     }
     .controls{display:flex;gap:8px;margin-bottom:14px}
@@ -41,11 +41,13 @@
     .user{color:var(--accent)}
     .cmd{color:var(--text)}
     .result{margin-left:12px;color:var(--text)}
-    .cursor{display:inline-block;width:8px;height:16px;background:var(--text);margin-left:4px;animation:blink 1s steps(2) infinite}
+    .cursor{display:inline-block;width:8px;height:16px;background:var(--text);margin-left:6px;animation:blink 1s steps(2) infinite}
     @keyframes blink{50%{opacity:0}}
 
-    .greeting{font-size:18px;margin-top:12px;margin-left:6px;white-space:pre-wrap;max-width:86%}
-    .greeting-line{margin:6px 0}
+    .greeting{font-size:18px;margin-top:18px;margin-left:6px;white-space:pre-wrap;max-width:86%;text-align:center}
+    .greeting h2{margin:0;color:var(--accent)}
+    .greeting-line{margin:8px 0}
+    .greeting .footer{margin-top:12px;color:var(--muted)}
 
     .loading span{display:inline-block;animation:dotBlink 1.2s infinite}
     .loading span:nth-child(2){animation-delay:.2s}
@@ -66,6 +68,7 @@
   </div>
 
   <script>
+    // ASCII cake/art
     const asciiCake = `
 ██   ██  █████  ██████  ██████  ██    ██     ██████  ██ ██████  ████████ ██   ██ ██████   █████  ██    ██ ██ 
 ██   ██ ██   ██ ██   ██ ██   ██  ██  ██      ██   ██ ██ ██   ██    ██    ██   ██ ██   ██ ██   ██  ██  ██  ██ 
@@ -74,91 +77,231 @@
 ██   ██ ██   ██ ██      ██         ██        ██████  ██ ██   ██    ██    ██   ██ ██████  ██   ██    ██    ██ 
                                                                                                              
                                                                                                              
-    `;
-   
-    const birthdayMessage = [
-      "Happy Birthday, RECIPIENT_NAME! 🎉",
-      "Life can feel NP-hard sometimes, but celebrating you is an O(n) decision.",
-      "— From Arm."
+`;
+
+    // rotating Big-O jokes
+    const jokes = [
+      "If happiness is O(n), today’s runtime should be exponential.",
+      "The AP Program offers college-level courses and exams that you can take in high school.",
+      "AP gives students the chance to tackle college-level work while they're still in high school. And through taking AP Exams, students can earn college credit and placement.",
+      "Life may feel NP-hard, but celebrating you is an O(1) decision.",
+      "Physics says ‘assume ideal conditions’, so I’m assuming you’ll have the perfect time.",
+      "If life was a database, your index would always be primary.",
+      "You are more reliable than a deterministic algorithm.",
+      "Even in a closed system, your energy somehow increases.",
+      "May your stack never overflow and your happiness always stay in scope.",
+      "If F = ma, then clearly the net force on me is just F = mg",
+      "Like AP scores, your awesomeness is reported on a 1–5 scale… but you’re easily a 6.",
+      "If life were an array, you’d definitely be at index 0."
     ];
 
-    const commands = [
-      {cmd: 'whoami', res: 'RECIPIENT_NAME'},
-      {cmd: 'uname -a', res: 'birthday-kernel v1.0 (fun-OS)'},
-      {cmd: 'echo $AGE', res: 'AGE'},
-      {cmd: 'ping party.server', res: 'Pinging 127.0.0.1 ... Success'},
-      {cmd: 'loading surprises', res: '<span class="loading">.<span>.</span><span>.</span></span>', raw:true},
-      {cmd: 'cat cake.txt', res: asciiCake, pre:true},
-      {cmd: 'cat birthday.txt', res: birthdayMessage}
-    ];
+    // placeholder values; will be replaced from query params
+    let NAME = 'RECIPIENT_NAME';
+    let AGE = '16';
+
+    // build commands dynamically after reading params
+    function buildCommands(){
+      return [
+        {cmd: 'whoami', res: NAME},
+        {cmd: 'uname -a', res: 'birthday-kernel v1.0 (fun-OS)'},
+        {cmd: 'echo $AGE', res: AGE},
+        {cmd: 'ping party.server', res: 'Pinging 127.0.0.1 ... Success'},
+        {cmd: 'loading surprises', res: '<span class="loading">.<span>.</span><span>.</span></span>', raw:true},
+        {cmd: 'cat cake.txt', res: asciiCake, pre:true},
+        {cmd: 'AGE++', special: 'ageInc'},
+        {cmd: 'cat birthday.txt', res: 'final'}
+      ];
+    }
 
     const output = document.getElementById('output');
 
-    let i = 0;
-    function runNext(){
-      if(i >= commands.length) return;
-      const c = commands[i];
-      const line = document.createElement('div');
-      line.className = 'line';
-      line.innerHTML = `<span class="prompt">guest@arms-space</span>:<span class="user">~</span>$ <span class="cmd">${c.cmd}</span><span class="cursor"></span>`;
-      output.appendChild(line);
-      scrollToBottom();
-
-      setTimeout(()=>{
-        line.querySelector('.cursor').remove();
-        if(Array.isArray(c.res)){
-          const greeting = document.createElement('div');
-          greeting.className = 'greeting';
-          c.res.forEach(txt => {
-            const gl = document.createElement('div');
-            gl.className = 'greeting-line';
-            gl.textContent = txt;
-            greeting.appendChild(gl);
-          });
-          output.appendChild(greeting);
+    // typing effect for commands and lines
+    function typeWriter(el, text, speed=35, cb){
+      let i=0;
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      el.appendChild(cursor);
+      function step(){
+        if(i < text.length){
+          cursor.insertAdjacentText('beforebegin', text.charAt(i));
+          i++;
+          setTimeout(step, speed);
         } else {
-          const res = document.createElement('div');
-          if(c.pre){
-            res.className = 'ascii-art';
-            res.textContent = c.res;
-          } else if(c.raw){
-            res.className = 'result';
-            res.innerHTML = '➜ ' + c.res;
-          } else {
-            res.className = 'result';
-            res.textContent = '➜ ' + c.res;
-          }
-          output.appendChild(res);
+          cursor.remove();
+          if(cb) cb();
         }
-        scrollToBottom();
-        i++;
-        setTimeout(runNext, 1600);
-      }, 1500);
+      }
+      step();
     }
 
+    // scroll helper
     function scrollToBottom(){
       output.parentElement.scrollTop = output.parentElement.scrollHeight;
     }
-    //asdASDasfasdf
-    // Personalization via query params
+
+    // run commands sequentially
+    let cmds = [];
+    let idx = 0;
+    function runNext(){
+      if(idx >= cmds.length) return;
+      const c = cmds[idx];
+
+      const line = document.createElement('div');
+      line.className = 'line';
+      const cmdSpan = document.createElement('span');
+      cmdSpan.className = 'cmd';
+      line.innerHTML = `<span class="prompt">guest@arms-space</span>:<span class="user">~</span>$ `;
+      line.appendChild(cmdSpan);
+      output.appendChild(line);
+      scrollToBottom();
+
+      typeWriter(cmdSpan, c.cmd, 50, ()=>{
+        setTimeout(()=>{
+          // special handlers
+          if(c.special === 'ageInc'){
+            // simulate multiple sub-commands for AGE++
+            const before = (typeof AGE === 'number') ? AGE : (parseInt(AGE,10) || 0);
+            const after = before + 1;
+            const flushLines = [
+              `AGE incremented: ${before} → ${after}`,
+              'compiling birthday modules...',
+              'loading candles...',
+              'spawning cake processes...',
+              'dispatching party packets...',
+              'rebuilding happiness index...',
+              'deploying confetti...',
+              'preparing nerdy jokes...',
+              'done.'
+            ];
+            // append flush lines one by one
+            flushLines.forEach((t,i2)=>{
+              setTimeout(()=>{
+                const r = document.createElement('div');
+                r.className = 'result';
+                r.textContent = '➜ ' + t;
+                output.appendChild(r);
+                scrollToBottom();
+              }, i2 * 450);
+            });
+            // update AGE variable after flush completes
+            setTimeout(()=>{
+              AGE = after;
+              idx++;
+              runNext();
+            }, flushLines.length * 450 + 300);
+            return;
+          }
+
+          if(Array.isArray(c.res)){
+            // array shouldn't occur in this build, but handle defensively
+            c.res.forEach(lineText => {
+              const r = document.createElement('div');
+              r.className = 'result';
+              r.textContent = '➜ ' + lineText;
+              output.appendChild(r);
+            });
+            idx++;
+            setTimeout(runNext, 500);
+            scrollToBottom();
+            return;
+          }
+
+          // final 'cat birthday.txt' trigger
+          if(c.res === 'final'){
+            // append a small result to show file cat
+            const r = document.createElement('div');
+            r.className = 'result';
+            r.textContent = '➜ Opening birthday.txt';
+            output.appendChild(r);
+            scrollToBottom();
+            setTimeout(()=>{
+              showGreeting();
+            }, 600);
+            return;
+          }
+
+          // normal outputs
+          const r = document.createElement('div');
+          if(c.pre){
+            r.className = 'ascii-art';
+            r.textContent = c.res;
+          } else if(c.raw){
+            r.className = 'result';
+            r.innerHTML = '➜ ' + c.res;
+          } else {
+            r.className = 'result';
+            r.textContent = '➜ ' + c.res;
+          }
+          output.appendChild(r);
+          scrollToBottom();
+
+          idx++;
+          setTimeout(runNext, 900);
+        }, 300);
+      });
+    }
+
+    // greeting that stays visible; header + cycling jokes + sign-off
+    let greetingEl = null;
+    function showGreeting(){
+      // ensure header/footer remain visible
+      if(!greetingEl){
+        greetingEl = document.createElement('div');
+        greetingEl.className = 'greeting';
+
+        const h = document.createElement('h2');
+        h.textContent = `Happy Birthday, ${NAME}!`;
+        greetingEl.appendChild(h);
+
+        const msg = document.createElement('div');
+        msg.className = 'greeting-line';
+        msg.textContent = '';
+        greetingEl.appendChild(msg);
+
+        const foot = document.createElement('div');
+        foot.className = 'footer';
+        foot.textContent = 'your favorite senior, probably';
+        greetingEl.appendChild(foot);
+
+        output.appendChild(greetingEl);
+        scrollToBottom();
+
+        // start cycling jokes between header and footer
+        let j = 0;
+        function cycle(){
+          // always show the header and footer; only replace msg text
+          msg.textContent = jokes[j].replace('RECIPIENT_NAME', NAME);
+          j = (j + 1) % jokes.length;
+          setTimeout(cycle, 3000);
+        }
+        cycle();
+      }
+    }
+
+    // read personalization params and start
     (function(){
       const params = new URLSearchParams(location.search);
       const name = params.get('name');
       const age = params.get('age');
-      if(name){
-        commands[0].res = name;
-        commands[6].res = [
-          `Happy Birthday, ${name}! 🎉`,
-          "Life can feel NP-hard sometimes, but celebrating is an O(n) decision.",
-          "— From Arm."
-        ];
-      }
+      if(name){ NAME = name; }
       if(age){
-        commands[2].res = age;
+        const n = parseInt(age,10);
+        AGE = Number.isFinite(n) ? n : age;
       }
-    })();
 
-    runNext();
+      // build commands with current NAME/AGE
+      cmds = buildCommands();
+
+      // substitute placeholders on initial command results
+      cmds.forEach(c => {
+        if(typeof c.res === 'string'){
+          c.res = c.res.replace(/RECIPIENT_NAME/g, NAME).replace(/AGE/g, AGE);
+        }
+      });
+
+      // kick off
+      runNext();
+    })();
   </script>
 </body>
 </html>
