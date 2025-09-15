@@ -78,7 +78,7 @@
    
     const birthdayMessage = [
       "Happy Birthday, RECIPIENT_NAME! 🎉",
-      "Life can feel NP-hard sometimes, but celebrating is an easy O(n) decision.",
+      "Life can feel NP-hard sometimes, but celebrating you is an O(n) decision.",
       "— From Arm."
     ];
 
@@ -100,7 +100,7 @@
       const c = commands[i];
       const line = document.createElement('div');
       line.className = 'line';
-      line.innerHTML = `<span class="prompt">guest@github-pages</span>:<span class="user">~</span>$ <span class="cmd">${c.cmd}</span><span class="cursor"></span>`;
+      line.innerHTML = `<span class="prompt">guest@arms-space</span>:<span class="user">~</span>$ <span class="cmd">${c.cmd}</span><span class="cursor"></span>`;
       output.appendChild(line);
       scrollToBottom();
 
@@ -149,7 +149,7 @@
         commands[0].res = name;
         commands[6].res = [
           `Happy Birthday, ${name}! 🎉`,
-          "Life can feel NP-hard sometimes, but celebrating is an easy O(n) decision.",
+          "Life can feel NP-hard sometimes, but celebrating is an O(n) decision.",
           "— From Arm."
         ];
       }
