@@ -107,10 +107,10 @@
         {cmd: 'echo $AGE', res: AGE},
         {cmd: 'ping party.server', res: 'Pinging 127.0.0.1 ... Success'},
         {cmd: 'loading surprises', res: '<span class="loading">.<span>.</span><span>.</span></span>', raw:true},
-        {cmd: 'cat cake.txt', res: asciiCake, pre:true},
+        {cmd: 'cat hbd.txt', res: asciiCake, pre:true},
         {cmd: 'AGE++', special: 'ageInc'},
         {cmd: 'xxd msg.bin', special: 'hexdump'},
-        {cmd: 'cat birthday.txt', res: 'final'}
+        {cmd: 'cat message.txt', res: 'final'}
       ];
     }
 
@@ -195,7 +195,7 @@
 
           if(c.special === 'hexdump'){
             const dump = [
-              "76 20 67 75 76 61 78 20 68 65 20 65 72 6E 79 79 6C 20 70 62 62 79 20 6E 61 71 20 6A 72 20 66 75 62 68 79 71 20 67 6E 79 78 20 7A 62 65 72 20 69 66 20 79 6F 75 72 65 20 63 75 72 69 6F 75 73 20 65 6E 6F 75 67 68 20 74 6F 20 72 65 61 64 20 74 68 69 73 2C 20 74 68 65 20 68 69 6E 74 20 69 73 20 30 78 44"
+              "76 20 67 75 76 61 78 20 68 65 20 65 72 6E 79 79 6C 20 70 62 62 79 20 "
             ];
             dump.forEach((line,i2)=>{
               setTimeout(()=>{
