@@ -79,19 +79,18 @@
                                                                                                              
 `;
 
-    // rotating Big-O jokes
+    // rotating jokes
     const jokes = [
-      "If happiness is O(n), today’s runtime should be exponential.",
-      "The AP Program offers college-level courses and exams that you can take in high school.",
-      "AP gives students the chance to tackle college-level work while they're still in high school. And through taking AP Exams, students can earn college credit and placement.",
-      "Life may feel NP-hard, but celebrating you is an O(1) decision.",
+      "Life may feel NP-hard, but celebrating you is a trivial decision.",
       "Physics says ‘assume ideal conditions’, so I’m assuming you’ll have the perfect time.",
       "If life was a database, your index would always be primary.",
       "You are more reliable than a deterministic algorithm.",
       "Even in a closed system, your energy somehow increases.",
       "May your stack never overflow and your happiness always stay in scope.",
+      "The AP Program offers college-level courses and exams that you can take in high school.",
       "If F = ma, then clearly the net force on me is just F = mg",
       "Like AP scores, your awesomeness is reported on a 1–5 scale… but you’re easily a 6.",
+       "AP gives students the chance to tackle college-level work while they're still in high school. And through taking AP Exams, students can earn college credit and placement.",
       "If life were an array, you’d definitely be at index 0."
     ];
 
@@ -106,10 +105,10 @@
         {cmd: 'uname -a', res: 'birthday-kernel v1.0 (fun-OS)'},
         {cmd: 'echo $AGE', res: AGE},
         {cmd: 'ping party.server', res: 'Pinging 127.0.0.1 ... Success'},
-        {cmd: 'loading surprises', res: '<span class="loading">.<span>.</span><span>.</span></span>', raw:true},
+        {cmd: 'bg surprises', res: '<span class="loading">.<span>.</span><span>.</span></span>', raw:true},
+        {cmd: 'xxd msg.bin', special: 'hexdump'},
         {cmd: 'cat hbd.txt', res: asciiCake, pre:true},
         {cmd: 'AGE++', special: 'ageInc'},
-        {cmd: 'xxd msg.bin', special: 'hexdump'},
         {cmd: 'cat message.txt', res: 'final'}
       ];
     }
@@ -151,7 +150,7 @@
       line.className = 'line';
       const cmdSpan = document.createElement('span');
       cmdSpan.className = 'cmd';
-      line.innerHTML = `<span class="prompt">guest@arms-space</span>:<span class="user">~</span>$ `;
+      line.innerHTML = `<span class="prompt">user@arms-terminal</span>:<span class="user">~</span>$ `;
       line.appendChild(cmdSpan);
       output.appendChild(line);
       scrollToBottom();
@@ -167,11 +166,9 @@
               `AGE incremented: ${before} → ${after}`,
               'compiling birthday modules...',
               'loading candles...',
-              'spawning cake processes...',
               'dispatching party packets...',
-              'rebuilding happiness index...',
-              'deploying confetti...',
-              'preparing nerdy jokes...',
+              'deploying wishes...',
+              'indexing nerdy jokes...',
               'done.'
             ];
             // append flush lines one by one
@@ -195,7 +192,8 @@
 
           if(c.special === 'hexdump'){
             const dump = [
-              "76 20 67 75 76 61 78 20 68 65 20 65 72 6E 79 79 6C 20 70 62 62 79 20 "
+              "69 20 74 68 69 6E 6B 20 75 72 20 72 65 61 6C 6C 79 20 61 77 65 73 6F 6D 65 20 77",
+              "65 20 73 68 6F 75 6C 64 20 74 61 6C 6B 20 6D 6F 72 65 20 70 72 6F 62 61 62 6C 79"
             ];
             dump.forEach((line,i2)=>{
               setTimeout(()=>{
