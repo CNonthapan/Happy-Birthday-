@@ -106,9 +106,9 @@
         {cmd: 'echo $AGE', res: AGE},
         {cmd: 'ping party.server', res: 'Pinging 127.0.0.1 ... Success'},
         {cmd: 'bg surprises', res: '<span class="loading">.<span>.</span><span>.</span></span>', raw:true},
+        {cmd: 'AGE++', special: 'ageInc'},
         {cmd: 'xxd msg.bin', special: 'hexdump'},
         {cmd: 'cat hbd.txt', res: asciiCake, pre:true},
-        {cmd: 'AGE++', special: 'ageInc'},
         {cmd: 'cat message.txt', res: 'final'}
       ];
     }
